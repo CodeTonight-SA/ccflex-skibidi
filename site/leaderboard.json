@@ -8,16 +8,16 @@
       "flex": 875,
       "suspect": false,
       "metrics": {
-        "tokens": 265100000,
+        "tokens": 268300000,
         "activeN": 82,
         "windowD": 105,
         "enduranceM": 12788,
-        "intensity": 3232926.8292682925,
+        "intensity": 3271951.2195121953,
         "consistency": 0.780952380952381,
         "streakQuality": 0.19047619047619047,
-        "f1984": 2155,
+        "f1984": 2181,
         "exactTokens": false,
-        "tokensDisplay": "265.1m"
+        "tokensDisplay": "268.3m"
       }
     }
   ],

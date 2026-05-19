@@ -28,8 +28,11 @@ test("a different committed entry than the card is rejected", () => {
 });
 
 test("a tampered embedded island is rejected", () => {
-  const tampered = honestCard.replace("265100000", "999000000"); // edit the JSON island
-  assert.notEqual(tampered, honestCard);
+  // Tamper a value derived from the seed itself — never a hardcoded literal
+  // (that coupled the test to one token count and broke when the seed updated).
+  const realTok = String(seed.stats.totalTokens.value);
+  const tampered = honestCard.replace(realTok, "999999999");
+  assert.notEqual(tampered, honestCard, "tamper must change the embedded island");
   const r = verifyCard(tampered, seed);
   assert.equal(r.ok, false);
 });

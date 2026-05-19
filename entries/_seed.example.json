@@ -12,20 +12,21 @@
   },
   "stats": {
     "favoriteModel": "Opus 4.7",
-    "totalTokens": { "value": 265100000, "display": "265.1m", "exact": false },
+    "totalTokens": { "value": 268300000, "display": "268.3m", "exact": false },
     "sessions": { "value": 1000, "display": "1.0k", "exact": false },
     "activeDays": { "active": 82, "of": 105 },
     "streak": { "currentDays": 5, "longestDays": 20 },
     "longestSessionMinutes": 12788,
     "peakHour": { "startHour": 23, "endHour": 24 },
     "funFacts": [
-      { "id": "tokens-vs-1984", "label": "more tokens than 1984", "value": 2155, "approx": true, "baseline": "1984" },
-      { "id": "tokens-vs-war-and-peace", "label": "more tokens than War & Peace", "value": 330, "approx": true, "baseline": "War and Peace" }
+      { "id": "longest-session-vs-the-office", "label": "longer than an episode of The Office", "value": 581, "approx": true, "baseline": "The Office ep ~22 min" },
+      { "id": "tokens-vs-1984", "label": "more tokens than 1984", "value": 2181, "approx": true, "baseline": "1984" },
+      { "id": "tokens-vs-war-and-peace", "label": "more tokens than War & Peace", "value": 334, "approx": true, "baseline": "War and Peace" }
     ]
   },
   "integrity": {
     "algo": "sha256",
     "canonicalization": "rfc8785",
-    "hash": "752510a3972da994ceb5ef2055fe97011478f404279773328f637d9518edd1fd"
+    "hash": "f69ac510d6eaae7e3503c801247520e55063551ec8790785d58c07ef863a9c3c"
   }
 }

@@ -16,6 +16,11 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const START = "<!-- LEADERBOARD:START -->";
 const END = "<!-- LEADERBOARD:END -->";
 const WEIGHTS = { tokens: 0.40, intensity: 0.25, consistency: 0.20, streak: 0.10, endurance: 0.05 };
+// Canonical render host (drafts/ccflex-cf-card-link-council.md). Card links
+// are emitted as the EXTENSIONLESS Cloudflare Pages URL: it renders the card
+// (a repo-relative .html link would show GitHub *source*), and Pages clean
+// URLs mean no .html -> /clean 308 redirect hop. On-disk file stays <handle>.html.
+const PAGES_BASE = "https://ccflex-skibidi.pages.dev";
 
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 
@@ -102,7 +107,7 @@ function row(r) {
   const tok = (r.m.exactTokens ? "" : "~") + r.m.tokensDisplay;
   const f1984 = r.m.f1984 != null ? `≈${r.m.f1984}×` : "—";
   const card = existsSync(join(ROOT, "site", "cards", `${c.handle}.html`))
-    ? `[card](site/cards/${c.handle}.html)` : "—";
+    ? `[card](${PAGES_BASE}/cards/${c.handle})` : "—";
   const flex = `${r.flex}${r.suspect ? " ⚠" : ""}`;
   return `| ${r.position} | ${who} | ${tok} | ${r.entry.stats.streak.longestDays} days | ` +
     `${fmtDuration(r.entry.stats.longestSessionMinutes)} | ${f1984} | ${flex} | ✓ verified | ${card} |`;

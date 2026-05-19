@@ -213,7 +213,7 @@
         esc(r.suspectReason || "shadow-flagged — see docs/metrics.md") +
         "</span>"
       : '<span class="flag" aria-hidden="true"></span>';
-    var href = "./cards/" + encodeURIComponent(r.handle || "operator") + ".html";
+    var href = "./cards/" + encodeURIComponent(r.handle || "operator");
     return (
       "<tr>" +
         '<td data-l="#" class="rank">' + esc(pos) + "</td>" +

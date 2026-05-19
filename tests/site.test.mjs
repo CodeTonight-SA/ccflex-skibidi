@@ -46,11 +46,18 @@ test("index.html mounts a board container and handles the empty state", () => {
   );
 });
 
-test("index.html links each row to ./cards/<handle>.html and shows shadow flags + honesty markers", () => {
+test("index.html links each row to the EXTENSIONLESS ./cards/<handle> and shows shadow flags + honesty markers", () => {
   assert.match(
     indexHtml,
     /["']\.\/cards\/["']\s*\+\s*encodeURIComponent/,
-    "rows must link to ./cards/<handle>.html"
+    "rows must link to ./cards/<handle>"
+  );
+  // Extensionless on purpose: Cloudflare Pages serves clean URLs; appending
+  // .html causes a 308 redirect hop. Goodhart regression guard — re-adding
+  // `+ ".html"` after the cards/ construction fails this.
+  assert.ok(
+    !/\.\/cards\/[\s\S]{0,90}\+\s*["']\.html["']/.test(indexHtml),
+    'card hrefs must be extensionless (no + ".html")'
   );
   // shadow flag (⚠ U+26A0) with a reason, and honesty markers ~ / ≈
   assert.ok(indexHtml.includes("&#9888;"), "must render the ⚠ shadow glyph");

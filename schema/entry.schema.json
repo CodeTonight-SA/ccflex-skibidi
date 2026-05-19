@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codetonight-sa.github.io/ccflex-skibidi/schema/entry.schema.json",
+  "title": "ccflex-skibidi entry",
+  "description": "Canonical, verifiable record of a contributor's Claude Code usage. Every field here is encoded faithfully by the generator; nothing is added that cannot be derived from this document.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "contributor", "source", "stats", "integrity"],
+  "$defs": {
+    "metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "display", "exact"],
+      "properties": {
+        "value": { "type": "integer", "minimum": 0, "description": "Best available numeric value. If the source only gave a rounded display (e.g. 265.1m), value is the de-rounded integer and exact=false." },
+        "display": { "type": "string", "maxLength": 24, "description": "The string Claude Code showed, verbatim (e.g. '265.1m', '1.0k')." },
+        "exact": { "type": "boolean", "description": "true only if value is the precise figure, not a de-rounded display." }
+      }
+    }
+  },
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "contributor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["handle"],
+      "properties": {
+        "handle": { "type": "string", "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9_-]{0,38})$", "description": "GitHub-handle-shaped; also the entry filename stem." },
+        "displayName": { "type": "string", "maxLength": 80 },
+        "url": { "type": "string", "format": "uri", "maxLength": 256 }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tool", "command", "window"],
+      "properties": {
+        "tool": { "const": "claude-code" },
+        "command": { "type": "string", "enum": ["/stats", "/usage", "/stats+/usage"] },
+        "capturedAt": { "type": "string", "format": "date-time" },
+        "window": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["days"],
+          "properties": { "days": { "type": "integer", "minimum": 1, "maximum": 3660 } }
+        }
+      }
+    },
+    "stats": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["favoriteModel", "totalTokens", "sessions", "activeDays", "streak"],
+      "properties": {
+        "favoriteModel": { "type": "string", "maxLength": 48 },
+        "totalTokens": { "$ref": "#/$defs/metric" },
+        "sessions": { "$ref": "#/$defs/metric" },
+        "activeDays": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["active", "of"],
+          "properties": {
+            "active": { "type": "integer", "minimum": 0 },
+            "of": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "streak": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["currentDays", "longestDays"],
+          "properties": {
+            "currentDays": { "type": "integer", "minimum": 0 },
+            "longestDays": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "longestSessionMinutes": { "type": "integer", "minimum": 0, "description": "Whole minutes. e.g. 8d 21h 8m = 12788." },
+        "peakHour": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["startHour", "endHour"],
+          "properties": {
+            "startHour": { "type": "integer", "minimum": 0, "maximum": 23 },
+            "endHour": { "type": "integer", "minimum": 1, "maximum": 24 }
+          }
+        },
+        "heatmap": {
+          "type": "array",
+          "description": "Exact per-day activity. OPTIONAL: omit entirely rather than fabricate values. The plugin populates this from the contributor's real local data.",
+          "maxItems": 3660,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["date", "count"],
+            "properties": {
+              "date": { "type": "string", "format": "date" },
+              "count": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "funFacts": {
+          "type": "array",
+          "maxItems": 16,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "label", "value", "approx"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^[a-z0-9-]{1,40}$" },
+              "label": { "type": "string", "maxLength": 80 },
+              "value": { "type": "number" },
+              "approx": { "type": "boolean", "description": "true when the source itself was approximate (e.g. the '~' in '~2155x')." },
+              "baseline": { "type": "string", "maxLength": 24 }
+            }
+          }
+        }
+      }
+    },
+    "integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algo", "canonicalization", "hash"],
+      "properties": {
+        "algo": { "const": "sha256" },
+        "canonicalization": { "const": "rfc8785" },
+        "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$", "description": "sha256 of the RFC-8785 (JCS) canonical JSON of {contributor, source, stats}. The page embeds this; verify() recomputes it. Tamper -> mismatch -> build fails." }
+      }
+    }
+  }
+}

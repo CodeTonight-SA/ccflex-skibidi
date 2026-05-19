@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+vendor/
+
+# Build / output
+dist/
+build/
+.cache/
+*.tsbuildinfo
+
+# Headless-browser / screenshot scratch
+.playwright/
+screenshots/tmp/
+*.local.png
+
+# Vanish preview artefacts (ephemeral by design — never committed)
+.vanish/
+*.vanish.url
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Secrets — never commit (defence in depth; nothing here should ever exist)
+.env
+.env.*
+*.pem
+*.key
+secrets.*
+
+# Local stats scratch (a contributor's raw dump before they choose an entry)
+*.stats.raw.json
+.local/

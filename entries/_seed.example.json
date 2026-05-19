@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0.0",
+  "contributor": {
+    "handle": "ccflex-seed",
+    "displayName": "ccflex-skibidi (seed entry)",
+    "url": "https://codetonight-sa.github.io/ccflex-skibidi"
+  },
+  "source": {
+    "tool": "claude-code",
+    "command": "/stats+/usage",
+    "window": { "days": 105 }
+  },
+  "stats": {
+    "favoriteModel": "Opus 4.7",
+    "totalTokens": { "value": 265100000, "display": "265.1m", "exact": false },
+    "sessions": { "value": 1000, "display": "1.0k", "exact": false },
+    "activeDays": { "active": 82, "of": 105 },
+    "streak": { "currentDays": 5, "longestDays": 20 },
+    "longestSessionMinutes": 12788,
+    "peakHour": { "startHour": 23, "endHour": 24 },
+    "funFacts": [
+      { "id": "tokens-vs-1984", "label": "more tokens than 1984", "value": 2155, "approx": true, "baseline": "1984" }
+    ]
+  },
+  "integrity": {
+    "algo": "sha256",
+    "canonicalization": "rfc8785",
+    "hash": "fc149b242f26434e7f36f66cbf0c8d73c59f6fa73997f97e1645596a73fac78d"
+  }
+}

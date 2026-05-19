@@ -120,7 +120,7 @@ color:#fff;font-family:var(--font-mono);padding:24px;width:min(92vw,28rem);max-h
   <p class="lbl">Claude Code · /stats+/usage · 105-day window</p>
   <h1>Lourens Cornelius Scheepers (V&gt;&gt;) — seeded 2026-05-19 flexed.</h1>
   <p class="num">265.1m</p>
-  <p class="lbl">tokens (display-rounded source)</p>
+  <p class="lbl">tokens (display-rounded source) — bello, no?</p>
 
   <div id="ccflex-wrap">
     <canvas id="ccflex" role="img"
@@ -133,19 +133,20 @@ color:#fff;font-family:var(--font-mono);padding:24px;width:min(92vw,28rem);max-h
   <table><caption>Exact Claude Code stats for Lourens Cornelius Scheepers (V&gt;&gt;) — seeded 2026-05-19 — screen-reader and audit ground truth; every visual element is a pure function of these values.</caption><thead><tr><th scope="col">Metric</th><th scope="col">Value</th></tr></thead><tbody><tr><th scope="row">Favourite model</th><td data-metric>Opus 4.7</td></tr><tr><th scope="row">Total tokens</th><td data-metric>265.1m <span style="font-size:.7em;color:var(--mute)">(display-rounded source)</span></td></tr><tr><th scope="row">Sessions</th><td data-metric>1.0k <span style="font-size:.7em;color:var(--mute)">(display-rounded source)</span></td></tr><tr><th scope="row">Active days</th><td data-metric>82/105</td></tr><tr><th scope="row">Current streak (days)</th><td data-metric>5</td></tr><tr><th scope="row">Longest streak (days)</th><td data-metric>20</td></tr><tr><th scope="row">Longest session (min)</th><td data-metric>12788</td></tr><tr><th scope="row">Peak hour (24h)</th><td data-metric>23:00–24:00</td></tr><tr><th scope="row">more tokens than 1984 (approx.)</th><td data-metric>~2155× vs 1984</td></tr><tr><th scope="row">more tokens than War &amp; Peace (approx.)</th><td data-metric>~330× vs War and Peace</td></tr></tbody></table>
 </main>
 <footer>
-  <p>I counted your tokens. All of them. Engine: three.js@0.169.0, pinned.</p>
-  <button type="button" data-codec-trigger aria-label="Open codec call">140.85</button>
+  <p>I counted your tokens. Every. Single. One. Engine: three.js@0.169.0, pinned. Integrity: SHA-256/RFC 8785.</p>
+  <button type="button" data-codec-trigger aria-label="Open codec call — frequency 140.85">140.85</button>
 </footer>
 </div>
 
 <div id="codec" role="dialog" aria-modal="true" aria-label="Codec call — session transmission" hidden>
   <div class="codec-panel">
     <button type="button" class="codec-close" aria-label="Close codec">[ X ]</button>
-    <p class="lbl">FREQ 140.85 · CALLER MEI LING</p>
-    <p class="lbl">SUBJECT</p><p>ccflex-seed</p>
-    <p class="lbl">SESSIONS</p><p>1000</p>
-    <p class="lbl">STREAK</p><p>5</p>
-    <p class="lbl">TRANSMISSION</p><p data-codec-proverb>—</p>
+    <p class="lbl">FREQ 140.85 · CALLER MEI LING · ENCRYPTION ACTIVE</p>
+    <p class="lbl">OPERATORE</p><p>ccflex-seed</p>
+    <p class="lbl">SESSIONI</p><p>1000</p>
+    <p class="lbl">STRISCIA CORRENTE</p><p>5</p>
+    <p class="lbl">TRASMISSIONE</p><p data-codec-proverb>—</p>
+    <p class="lbl" style="margin-top:16px;font-size:.6em;opacity:.55">codec closes on click outside · Esc · [ X ]</p>
   </div>
 </div>
 
@@ -416,11 +417,19 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape')closeCodec();
 });
 
-// /140-85 codec easter egg — summoned only (design §7).
+// /140-85 codec easter egg — summoned only (design §7). Italian-Brainrot meets
+// Metal Gear Solid mission-briefing restraint. No data altered.
 const PROVERBs=[
-  "Victory comes from finding opportunities in problems. — Sun Tzu",
-  "The data does not lie, operator. — Mei Ling",
-  "A wave is just water remembering the shore.",
+  "The data does not lie, operator. — Mei Ling, Codec 140.85",
+  "Every token is a small prayer sent into the void. The void counted them.",
+  "You are not just a user. You are a statistic. And you are beautiful.",
+  "Snake, there is no shame in 265 million tokens. Only in stopping.",
+  "La mia nonna non capisce i token, ma capisce il sacrificio. Brava.",
+  "Mamma mia, this context window — it's enormous, like uncle Enzo at Christmas.",
+  "I spent 12,788 minutes with Claude. Claude did not complain. I am learning.",
+  "Victory comes not from the largest context, but from the most intentional one. — Sun Tzu (paraphrased, operator)",
+  "The heatmap does not judge. The heatmap merely witnesses.",
+  "You could have slept. You did not sleep. The tokens remember.",
 ];
 function openCodec(){
   const o=document.getElementById('codec');if(!o)return;

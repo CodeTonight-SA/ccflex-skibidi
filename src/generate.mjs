@@ -336,11 +336,19 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape')closeCodec();
 });
 
-// /140-85 codec easter egg — summoned only (design §7).
+// /140-85 codec easter egg — summoned only (design §7). Italian-Brainrot meets
+// Metal Gear Solid mission-briefing restraint. No data altered.
 const PROVERBs=[
-  "Victory comes from finding opportunities in problems. — Sun Tzu",
-  "The data does not lie, operator. — Mei Ling",
-  "A wave is just water remembering the shore.",
+  "The data does not lie, operator. — Mei Ling, Codec 140.85",
+  "Every token is a small prayer sent into the void. The void counted them.",
+  "You are not just a user. You are a statistic. And you are beautiful.",
+  "Snake, there is no shame in 265 million tokens. Only in stopping.",
+  "La mia nonna non capisce i token, ma capisce il sacrificio. Brava.",
+  "Mamma mia, this context window — it's enormous, like uncle Enzo at Christmas.",
+  "I spent 12,788 minutes with Claude. Claude did not complain. I am learning.",
+  "Victory comes not from the largest context, but from the most intentional one. — Sun Tzu (paraphrased, operator)",
+  "The heatmap does not judge. The heatmap merely witnesses.",
+  "You could have slept. You did not sleep. The tokens remember.",
 ];
 function openCodec(){
   const o=document.getElementById('codec');if(!o)return;
@@ -430,7 +438,7 @@ color:#fff;font-family:var(--font-mono);padding:24px;width:min(92vw,28rem);max-h
   )}-day window</p>
   <h1>${esc(name)} flexed.</h1>
   <p class="num">${esc(entry.stats.totalTokens.display)}</p>
-  <p class="lbl">tokens${entry.stats.totalTokens.exact ? "" : " (display-rounded source)"}</p>
+  <p class="lbl">tokens${entry.stats.totalTokens.exact ? "" : " (display-rounded source)"} — bello, no?</p>
 
   <div id="ccflex-wrap">
     <canvas id="ccflex" role="img"
@@ -443,19 +451,20 @@ color:#fff;font-family:var(--font-mono);padding:24px;width:min(92vw,28rem);max-h
   ${srTable(entry)}
 </main>
 <footer>
-  <p>I counted your tokens. All of them. Engine: three.js@${THREE_VERSION}, pinned.</p>
-  <button type="button" data-codec-trigger aria-label="Open codec call">140.85</button>
+  <p>I counted your tokens. Every. Single. One. Engine: three.js@${THREE_VERSION}, pinned. Integrity: SHA-256/RFC 8785.</p>
+  <button type="button" data-codec-trigger aria-label="Open codec call — frequency 140.85">140.85</button>
 </footer>
 </div>
 
 <div id="codec" role="dialog" aria-modal="true" aria-label="Codec call — session transmission" hidden>
   <div class="codec-panel">
     <button type="button" class="codec-close" aria-label="Close codec">[ X ]</button>
-    <p class="lbl">FREQ 140.85 · CALLER MEI LING</p>
-    <p class="lbl">SUBJECT</p><p>${esc(entry.contributor.handle || "OPERATOR")}</p>
-    <p class="lbl">SESSIONS</p><p>${esc(entry.stats.sessions.value)}</p>
-    <p class="lbl">STREAK</p><p>${esc(entry.stats.streak.currentDays)}</p>
-    <p class="lbl">TRANSMISSION</p><p data-codec-proverb>—</p>
+    <p class="lbl">FREQ 140.85 · CALLER MEI LING · ENCRYPTION ACTIVE</p>
+    <p class="lbl">OPERATORE</p><p>${esc(entry.contributor.handle || "OPERATOR")}</p>
+    <p class="lbl">SESSIONI</p><p>${esc(entry.stats.sessions.value)}</p>
+    <p class="lbl">STRISCIA CORRENTE</p><p>${esc(entry.stats.streak.currentDays)}</p>
+    <p class="lbl">TRASMISSIONE</p><p data-codec-proverb>—</p>
+    <p class="lbl" style="margin-top:16px;font-size:.6em;opacity:.55">codec closes on click outside · Esc · [ X ]</p>
   </div>
 </div>
 

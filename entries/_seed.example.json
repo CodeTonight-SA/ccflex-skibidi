@@ -2,7 +2,7 @@
   "schemaVersion": "1.0.0",
   "contributor": {
     "handle": "ccflex-seed",
-    "displayName": "ccflex-skibidi (seed entry)",
+    "displayName": "Lourens Cornelius Scheepers (V>>) — seeded 2026-05-19",
     "url": "https://codetonight-sa.github.io/ccflex-skibidi"
   },
   "source": {
@@ -25,6 +25,6 @@
   "integrity": {
     "algo": "sha256",
     "canonicalization": "rfc8785",
-    "hash": "fc149b242f26434e7f36f66cbf0c8d73c59f6fa73997f97e1645596a73fac78d"
+    "hash": "5ef2ee4ca74a23f02c4ea2baa2fc724fbf369d9d8fd86a5b82f927b6c4e037be"
   }
 }

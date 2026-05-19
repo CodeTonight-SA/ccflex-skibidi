@@ -103,7 +103,7 @@
   .honesty { color:var(--mute-min); font-size:0.6875rem;
              letter-spacing:0.12em; }
   .card-link a { display:inline-flex; align-items:center;
-                 min-height:44px; padding:0 4px; }
+                 min-width:48px; min-height:48px; padding:0 4px; }
 
   .empty { border:1px solid var(--line); padding:48px 24px;
            text-align:center; }
@@ -130,15 +130,22 @@
     .reveal { opacity:1!important; transform:none!important; }
   }
 
-  @media (max-width:639px) {
-    thead { position:absolute; left:-9999px; }
-    tbody td { display:block; padding:4px 0; border:0; }
-    tbody tr { display:block; border-bottom:1px solid var(--line);
-               padding:18px 0; }
-    .num { text-align:left; }
-    td[data-l]::before { content:attr(data-l) "  ";
-                         color:var(--mute-min); font-size:0.625rem;
-                         letter-spacing:0.18em; text-transform:uppercase; }
+  /* Mobile-first: stacked layout is the base; table layout kicks in at >=640px */
+  thead { position:absolute; left:-9999px; }
+  tbody td { display:block; padding:4px 0; border:0; }
+  tbody tr { display:block; border-bottom:1px solid var(--line);
+             padding:18px 0; }
+  .num { text-align:left; }
+  td[data-l]::before { content:attr(data-l) "  ";
+                       color:var(--mute-min); font-size:0.625rem;
+                       letter-spacing:0.18em; text-transform:uppercase; }
+  @media (min-width:640px) {
+    thead { position:static; left:auto; }
+    tbody td { display:table-cell; padding:18px 16px 18px 0; border:0;
+               border-bottom:1px solid var(--line); }
+    tbody tr { display:table-row; border-bottom:0; padding:0; }
+    .num { text-align:right; }
+    td[data-l]::before { content:none; }
   }
 </style>
 </head>

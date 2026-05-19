@@ -35,7 +35,7 @@ It is two things at once, on purpose:
 
 | # | Contributor | Tokens | Longest streak | Longest session | 1984× | Flex | Verify | Card |
 |---|-------------|--------|----------------|------------------|-------|------|--------|------|
-| 1 | [ccflex-skibidi (seed entry)](https://codetonight-sa.github.io/ccflex-skibidi) | ~265.1m | 20 days | 8d 21h 8m | ≈2155× | 875 | ✓ verified | — |
+| 1 | [Lourens Cornelius Scheepers (V>>) — seeded 2026-05-19](https://codetonight-sa.github.io/ccflex-skibidi) | ~265.1m | 20 days | 8d 21h 8m | ≈2155× | 875 | ✓ verified | — |
 
 _Generated from verified `entries/`. Not hand-edited — it cannot be. `⚠` = shadow-flagged (see `docs/metrics.md`)._
 

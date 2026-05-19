@@ -22,6 +22,8 @@ import {
   verifyParity,
   tokensToParticleCount,
   particleCountToTokens,
+  makeRng,
+  seedFromEntry,
 } from "../src/verify-core.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -128,4 +130,40 @@ test("Goodhart: tampered hash island shape is detectable", () => {
   const forgedHtml = generate(forged);
   const forgedInteg = islandJSON(forgedHtml, "ccflex-integrity");
   assert.notEqual(forgedInteg.hash, integ.hash);
+});
+
+// MT19937 Goodhart-proof reference vector tests.
+// Reference: Matsumoto & Nishimura original mt19937ar.c published output.
+// Hardcoded expected values — fails if any algorithm constant is wrong.
+// Float→uint32: Math.round(rng() * 4294967296) because makeRng returns float in [0,1).
+
+test("MT19937 reference vector: seed=0 first uint32=2357136044", () => {
+  const rng = makeRng(0);
+  const u = Math.round(rng() * 4294967296);
+  assert.equal(u, 2357136044);
+});
+
+test("MT19937 reference vector: seed=1 first uint32=1791095845", () => {
+  const rng = makeRng(1);
+  const u = Math.round(rng() * 4294967296);
+  assert.equal(u, 1791095845);
+});
+
+test("MT19937 idempotence: same seed -> identical sequence past first twist (fold(fold)=fold)", () => {
+  // 700 draws = past the first 624-word twist, exercising the regenerate path.
+  // Fails if the state is mutated globally or if the closure is not independent.
+  const r1 = makeRng(42), r2 = makeRng(42);
+  for (let i = 0; i < 700; i++) {
+    assert.equal(r1(), r2(), `mismatch at draw ${i}`);
+  }
+});
+
+test("MT19937 determinism from entry hash: seedFromEntry + makeRng reproducible", () => {
+  // seedFromEntry derives a uint32 from the first 8 hex chars of the integrity hash.
+  // Two independent makeRng calls from the same seed must yield identical first values.
+  const seed = seedFromEntry(SEED);
+  assert.ok(seed > 0, "seed must be non-zero for this entry (hash starts with 5ef2ee4c)");
+  const v1 = makeRng(seed)();
+  const v2 = makeRng(seed)();
+  assert.equal(v1, v2);
 });

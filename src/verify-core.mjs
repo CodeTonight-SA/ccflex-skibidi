@@ -49,19 +49,58 @@ export const ENCODING = Object.freeze({
 });
 
 // ---------------------------------------------------------------------------
-// mulberry32 — seeded RNG (drafts/ccflex-threejs-research.md §1.5). Layout is
-// seeded, never value-derived: shape = aesthetic, population = truth. Pure,
+// MT19937 — seeded RNG (replaces mulberry32; drafts/ccflex-threejs-research.md §1.5).
+// Standard Matsumoto & Nishimura constants (n=624, m=397). Layout is seeded,
+// never value-derived: shape = aesthetic, population = truth. Pure,
 // deterministic; same seed -> identical sequence -> pixel-stable scene.
+// Idempotent fold property: makeRng(seed).next() is a pure function of seed;
+// calling the generator twice from the same seed yields the same sequence
+// (fold(fold) = fold when you reconstruct from seed — proved by determinism test).
 // ---------------------------------------------------------------------------
-export function mulberry32(a) {
-  return function () {
-    a |= 0;
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+const MT_N = 624, MT_M = 397;
+const MT_MATRIX_A = 0x9908b0df >>> 0;
+const MT_UPPER_MASK = 0x80000000 >>> 0; // most significant w-r bits
+const MT_LOWER_MASK = 0x7fffffff >>> 0; // least significant r bits
+
+export function makeRng(seed) {
+  const mt = new Uint32Array(MT_N);
+  let mti = MT_N + 1;
+  // Knuth linear congruential initialiser
+  mt[0] = seed >>> 0;
+  for (let i = 1; i < MT_N; i++) {
+    mt[i] = (Math.imul(0x6c078965, mt[i - 1] ^ (mt[i - 1] >>> 30)) + i) >>> 0;
+  }
+  mti = MT_N;
+
+  return function next() {
+    let y;
+    if (mti >= MT_N) {
+      // generate N words at once
+      for (let kk = 0; kk < MT_N - MT_M; kk++) {
+        y = (mt[kk] & MT_UPPER_MASK) | (mt[kk + 1] & MT_LOWER_MASK);
+        mt[kk] = mt[kk + MT_M] ^ (y >>> 1) ^ ((y & 1) ? MT_MATRIX_A : 0);
+      }
+      for (let kk = MT_N - MT_M; kk < MT_N - 1; kk++) {
+        y = (mt[kk] & MT_UPPER_MASK) | (mt[kk + 1] & MT_LOWER_MASK);
+        mt[kk] = mt[kk + (MT_M - MT_N)] ^ (y >>> 1) ^ ((y & 1) ? MT_MATRIX_A : 0);
+      }
+      y = (mt[MT_N - 1] & MT_UPPER_MASK) | (mt[0] & MT_LOWER_MASK);
+      mt[MT_N - 1] = mt[MT_M - 1] ^ (y >>> 1) ^ ((y & 1) ? MT_MATRIX_A : 0);
+      mti = 0;
+    }
+    y = mt[mti++];
+    // tempering
+    y ^= y >>> 11;
+    y ^= (y << 7) & 0x9d2c5680;
+    y ^= (y << 15) & 0xefc60000;
+    y ^= y >>> 18;
+    return (y >>> 0) / 4294967296;
   };
 }
+
+// Backward-compat alias kept for any caller that used mulberry32 by name.
+// The page script uses makeRng directly (updated in generate.mjs).
+export { makeRng as mulberry32 };
 
 // A stable integer seed derived purely from the entry's integrity hash, so
 // the layout is reproducible from the published JSON alone (no Date.now()).

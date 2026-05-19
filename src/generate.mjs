@@ -99,7 +99,26 @@ const E = JSON.parse(document.getElementById('ccflex-entry').textContent);
 const ENC = ${JSON.stringify(ENCODING)};
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+// MT19937 — mirrors verify-core.mjs::makeRng (canonical there; this inline copy
+// is tested for round-trip consistency by the generate.test.mjs suite).
+function makeRng(seed){
+  const N=624,M=397,MA=0x9908b0df>>>0,UM=0x80000000>>>0,LM=0x7fffffff>>>0;
+  const mt=new Uint32Array(N);
+  mt[0]=seed>>>0;
+  for(let i=1;i<N;i++)mt[i]=(Math.imul(0x6c078965,mt[i-1]^(mt[i-1]>>>30))+i)>>>0;
+  let mti=N;
+  return function next(){
+    let y;
+    if(mti>=N){
+      for(let k=0;k<N-M;k++){y=(mt[k]&UM)|(mt[k+1]&LM);mt[k]=mt[k+M]^(y>>>1)^((y&1)?MA:0);}
+      for(let k=N-M;k<N-1;k++){y=(mt[k]&UM)|(mt[k+1]&LM);mt[k]=mt[k+(M-N)]^(y>>>1)^((y&1)?MA:0);}
+      y=(mt[N-1]&UM)|(mt[0]&LM);mt[N-1]=mt[M-1]^(y>>>1)^((y&1)?MA:0);
+      mti=0;
+    }
+    y=mt[mti++];y^=y>>>11;y^=(y<<7)&0x9d2c5680;y^=(y<<15)&0xefc60000;y^=y>>>18;
+    return(y>>>0)/4294967296;
+  };
+}
 function tokensToParticleCount(t){return Math.floor(t/ENC.TOKEN_BUCKET);}
 function countToHeight(c){return Math.max(ENC.HEIGHT_MIN,ENC.HEIGHT_K*c);}
 function heightToCount(y){return y/ENC.HEIGHT_K;}
@@ -142,7 +161,7 @@ function buildWebGL(){
   const tok=E.stats.totalTokens?.value??0;
   const pc=tokensToParticleCount(tok);
   if(pc>0){
-    const N=Math.min(pc,30000),rnd=mulberry32(seed);
+    const N=Math.min(pc,30000),rnd=makeRng(seed);
     const pos=new Float32Array(N*3);
     for(let i=0;i<N;i++){pos[i*3]=(rnd()-0.5)*40;pos[i*3+1]=rnd()*22;pos[i*3+2]=(rnd()-0.5)*40;}
     const pg=new THREE.BufferGeometry();

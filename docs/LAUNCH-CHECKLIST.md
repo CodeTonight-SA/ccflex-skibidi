@@ -17,10 +17,10 @@ must not do).
 - [ ] No secrets, no absolute user paths, no `instance`/state files committed
       (`.gitignore` covers them; verify the tree, do not assume).
 - [ ] `LICENSE` = MIT, © **Lourens Cornelius Scheepers**, year correct.
-- [ ] README credits: LinkedIn `https://www.linkedin.com/in/laurie-scheepers/`,
-      `https://codetonight-sa.github.io`, and **ENTER Konsult URL filled in**
-      (currently a `TODO` placeholder — supply the canonical URL; it was not
-      fabricated).
+- [ ] README credits verify present (V>> supplied 2026-05-19, no longer TODO):
+      LinkedIn `https://www.linkedin.com/in/laurie-scheepers/`, GRIP
+      `https://about.grip-web.com`, ENTER Konsult `https://www.enterkonsult.com`,
+      alternative `https://codetonight-sa.github.io/`.
 - [ ] Untrusted-content path reviewed: CI verifies submissions by **parsing,
       never executing**; the verify job is capability-locked; forked-PR
       workflows expose no repo secrets.

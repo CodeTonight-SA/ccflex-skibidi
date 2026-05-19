@@ -19,7 +19,7 @@ const root = join(here, "..");
 
 // Load the seed entry once.
 const SEED = JSON.parse(
-  readFileSync(join(root, "entries", "_seed.example.json"), "utf8")
+  readFileSync(join(root, "entries", "ccflex-seed.json"), "utf8")
 );
 
 // Generate HTML once — all card tests share this.

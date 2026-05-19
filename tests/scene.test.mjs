@@ -14,7 +14,7 @@ import { generate } from "../src/generate.mjs";
 import { ENCODING } from "../src/verify-core.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const SEED = JSON.parse(readFileSync(join(ROOT, "entries/_seed.example.json"), "utf8"));
+const SEED = JSON.parse(readFileSync(join(ROOT, "entries/ccflex-seed.json"), "utf8"));
 const HTML = generate(SEED);
 
 test("FULLSCREEN FIX: :fullscreen CSS grows the canvas to the viewport", () => {

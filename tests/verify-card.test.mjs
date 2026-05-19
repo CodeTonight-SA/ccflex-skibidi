@@ -11,7 +11,7 @@ import { generate } from "../src/generate.mjs";
 import { verifyCard } from "../src/verify-card.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const seed = JSON.parse(readFileSync(join(here, "..", "entries", "_seed.example.json"), "utf8"));
+const seed = JSON.parse(readFileSync(join(here, "..", "entries", "ccflex-seed.json"), "utf8"));
 const honestCard = generate(seed);
 
 test("honest card verifies against its committed entry", () => {

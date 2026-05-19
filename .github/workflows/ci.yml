@@ -1,0 +1,54 @@
+name: ci
+
+# Untrusted-PR safe: pull_request (NOT pull_request_target) means a forked
+# PR's workflow runs WITHOUT repo secrets and with the read-only token below.
+# Submitted entry/card content is parsed by the verifier, never executed
+# (see SECURITY.md + docs/ci.md - capability lock).
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: test + validate + verify-cards + leaderboard-check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Unit tests (every test can fail under mutation)
+        run: npm test
+
+      - name: Validate every committed entry
+        run: |
+          shopt -s nullglob
+          for entry in entries/*.json; do
+            echo "validate: $entry"
+            node src/validate.mjs "$entry"
+          done
+
+      - name: Verify every card honestly renders its committed entry
+        run: |
+          shopt -s nullglob
+          for card in site/cards/*.html; do
+            handle="$(basename "$card" .html)"
+            entry="entries/${handle}.json"
+            if [ ! -f "$entry" ]; then
+              echo "::error::card $card has no matching $entry"
+              exit 1
+            fi
+            echo "verify-card: $card vs $entry"
+            node src/verify-card.mjs "$card" "$entry"
+          done
+
+      - name: Leaderboard freshness gate
+        run: node src/leaderboard.mjs --check

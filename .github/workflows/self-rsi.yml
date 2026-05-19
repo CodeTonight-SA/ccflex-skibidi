@@ -1,0 +1,59 @@
+name: self-rsi
+
+# Read-only "alive" pass (grip-anywhere style). Analyses the repo on a
+# schedule and OPENS AN ISSUE with proposed improvements. It can never mutate
+# code, never self-merge, never flip the repo public (bootstrap exception:
+# the loop does not grant itself the one authority it must not have - see
+# docs/LAUNCH-CHECKLIST.md). Least privilege: issues:write ONLY.
+on:
+  schedule:
+    - cron: "17 6 * * 1"   # 06:17 UTC every Monday
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  analyse:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (read-only)
+        uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Static health pass (never mutates the repo)
+        id: health
+        run: |
+          {
+            echo "## Automated weekly health pass"
+            echo
+            echo "Read-only analysis. No code was changed by this run."
+            echo
+            echo "- Tests: \`npm test\`"
+            echo "- Entries validated: \`node src/validate.mjs\` per \`entries/*.json\`"
+            echo "- Cards verified: \`node src/verify-card.mjs\` per \`site/cards/*.html\`"
+            echo "- Leaderboard freshness: \`node src/leaderboard.mjs --check\`"
+            echo
+            echo "Entry count: $(ls -1 entries/*.json 2>/dev/null | wc -l | tr -d ' ')"
+            echo "Card count: $(ls -1 site/cards/*.html 2>/dev/null | wc -l | tr -d ' ')"
+            echo
+            echo "_Proposed improvements go through the same untrusted-content"
+            echo "PR path as a human contributor. This job opens an issue only."
+            echo "It never commits, never merges, never flips visibility._"
+          } > /tmp/rsi-body.md
+          echo "ran=true" >> "$GITHUB_OUTPUT"
+
+      - name: Open improvement issue
+        if: steps.health.outputs.ran == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --title "self-rsi: weekly health pass $(date -u +%Y-%m-%d)" \
+            --body-file /tmp/rsi-body.md \
+            --label "self-rsi"

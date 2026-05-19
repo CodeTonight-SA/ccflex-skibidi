@@ -1,0 +1,10 @@
+{
+  "name": "ccflex-skibidi",
+  "version": "0.1.0",
+  "description": "Render your real Claude Code /stats and /usage as a verifiable WebGL flex card, then open the entry PR. Numbers are read from your own machine; nothing is fabricated.",
+  "author": "Lourens Cornelius Scheepers",
+  "license": "MIT",
+  "homepage": "https://github.com/CodeTonight-SA/ccflex-skibidi",
+  "commandsDir": "commands",
+  "skillsDir": "skills"
+}

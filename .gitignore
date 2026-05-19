@@ -18,6 +18,9 @@ screenshots/tmp/
 .vanish/
 *.vanish.url
 
+# Cloudflare Pages / wrangler local deploy cache (never committed)
+.wrangler/
+
 # OS / editor
 .DS_Store
 Thumbs.db

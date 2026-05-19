@@ -33,12 +33,11 @@ It is two things at once, on purpose:
 
 <!-- LEADERBOARD:START -->
 
-| # | Contributor | Tokens | Longest streak | Longest session | 1984× | Verify | Card |
-|---|-------------|--------|----------------|------------------|-------|--------|------|
-| — | _seed entry — yours could be #1_ | 265.1M | 20 days | 8d 21h 8m | 2155× | _pending_ | _pending_ |
+| # | Contributor | Tokens | Longest streak | Longest session | 1984× | Flex | Verify | Card |
+|---|-------------|--------|----------------|------------------|-------|------|--------|------|
+| 1 | [ccflex-skibidi (seed entry)](https://codetonight-sa.github.io/ccflex-skibidi) | ~265.1m | 20 days | 8d 21h 8m | ≈2155× | 875 | ✓ verified | — |
 
-_The board is generated from verified entries in `entries/`. It is not edited
-by hand. It cannot be — that is the point._
+_Generated from verified `entries/`. Not hand-edited — it cannot be. `⚠` = shadow-flagged (see `docs/metrics.md`)._
 
 <!-- LEADERBOARD:END -->
 

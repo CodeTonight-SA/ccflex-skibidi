@@ -1,0 +1,22 @@
+{
+  "name": "ccflex-skibidi",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Your Claude Code /stats, rendered in WebGL. Ranked. Verifiable. Alive.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Lourens Cornelius Scheepers (https://www.linkedin.com/in/laurie-scheepers/)",
+  "homepage": "https://codetonight-sa.github.io/ccflex-skibidi",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "validate": "node src/validate.mjs",
+    "validate:seed": "node src/validate.mjs entries/_seed.example.json",
+    "generate": "node src/generate.mjs"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "comment": "private:true is deliberate pre-launch — prevents accidental npm publish before the maintainer flips the project public. No runtime dependencies by design (minimal supply-chain surface, see SECURITY.md)."
+}

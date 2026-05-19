@@ -1,0 +1,25 @@
+{
+  "generatedFrom": "entries/",
+  "count": 1,
+  "ranked": [
+    {
+      "position": 1,
+      "handle": "ccflex-seed",
+      "flex": 875,
+      "suspect": false,
+      "metrics": {
+        "tokens": 265100000,
+        "activeN": 82,
+        "windowD": 105,
+        "enduranceM": 12788,
+        "intensity": 3232926.8292682925,
+        "consistency": 0.780952380952381,
+        "streakQuality": 0.19047619047619047,
+        "f1984": 2155,
+        "exactTokens": false,
+        "tokensDisplay": "265.1m"
+      }
+    }
+  ],
+  "rejected": []
+}

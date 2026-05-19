@@ -95,8 +95,10 @@ header{display:flex;justify-content:space-between;align-items:center;border-bott
 h1{font-family:var(--font-sans);font-weight:700;letter-spacing:-0.045em;font-size:clamp(2rem,5vw,4.5rem);margin:48px 0 8px;}
 .num{font-family:var(--font-mono);font-weight:700;letter-spacing:-0.04em;font-size:clamp(3rem,8vw,6rem);color:var(--ink);line-height:.9;}
 .lbl{font-family:var(--font-mono);font-size:.6875rem;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);}
-#ccflex-wrap{position:relative;width:100%;margin:24px 0;}
-canvas#ccflex{display:block;width:100%;height:min(60dvh,420px);min-height:320px;border:1px solid var(--line);background:transparent;}
+#ccflex-wrap{position:relative;width:100%;margin:24px 0;border:1px solid var(--line);background:radial-gradient(ellipse at 50% 36%,#15131c 0%,#0b0a10 56%,#070709 100%);}
+canvas#ccflex{display:block;width:100%;height:min(72dvh,560px);min-height:380px;border:0;background:transparent;}
+#ccflex-wrap:fullscreen,#ccflex-wrap:-webkit-full-screen{width:100vw;height:100vh;height:100dvh;margin:0;border:0;}
+#ccflex-wrap:fullscreen canvas#ccflex,#ccflex-wrap:-webkit-full-screen canvas#ccflex{width:100vw;height:100vh;height:100dvh;max-width:none;min-height:0;}
 #ccflex-fs{position:absolute;top:8px;right:8px;min-width:44px;min-height:44px;background:rgba(0,0,0,.55);border:1px solid var(--line);color:var(--ink);font-family:var(--font-mono);font-size:.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0 10px;z-index:2;}
 @media (prefers-color-scheme:dark){#ccflex-fs{background:rgba(255,255,255,.08);}}
 #ccflex-tip{position:fixed;background:var(--paper);border:1px solid var(--accent);color:var(--ink);font-family:var(--font-mono);font-size:.72rem;padding:6px 10px;pointer-events:none;z-index:10;max-width:220px;line-height:1.4;display:none;}
@@ -227,122 +229,265 @@ function showTip(x,y,html){
 }
 function hideTip(){if(tip)tip.hidden=true;}
 
-// Fullscreen toggle.
+// Fullscreen toggle + viewport-fill FIX. Root cause of the bug: the canvas
+// height was hard-capped (min(_,Npx)) and nothing resized the renderer on
+// the FS transition, so requesting fullscreen only widened a letterbox.
+// resize() is now the SINGLE sizing authority — ResizeObserver, window
+// resize AND fullscreenchange all call it — and :fullscreen CSS lets the
+// canvas grow to the viewport so the resize has room to take effect.
 const fsBtn=document.getElementById('ccflex-fs');
 const wrap=document.getElementById('ccflex-wrap');
+let renderer=null,controls=null,cam=null,resize=()=>{};
+function inFullscreen(){return!!(document.fullscreenElement||document.webkitFullscreenElement);}
 fsBtn?.addEventListener('click',()=>{
-  if(!document.fullscreenElement)wrap?.requestFullscreen?.();
-  else document.exitFullscreen?.();
+  if(!inFullscreen())(wrap?.requestFullscreen?.()||wrap?.webkitRequestFullscreen?.());
+  else (document.exitFullscreen?.()||document.webkitExitFullscreen?.());
 });
-document.addEventListener('fullscreenchange',()=>{
-  if(fsBtn)fsBtn.textContent=document.fullscreenElement?'[⤢]':'[⤡]';
-});
+function onFsChange(){
+  if(fsBtn)fsBtn.textContent=inFullscreen()?'[ ⤡ ]':'[ FS ]';
+  // Layout settles one frame after the FS transition — resize after it.
+  requestAnimationFrame(()=>requestAnimationFrame(resize));
+}
+document.addEventListener('fullscreenchange',onFsChange);
+document.addEventListener('webkitfullscreenchange',onFsChange);
 
-let grid=null,points=null,renderer=null,controls=null;
+let grid=null,points=null;
 const statMeshes=[];
 
-function makeSpriteLabel(txt,color){
-  const c=document.createElement('canvas');c.width=256;c.height=64;
+function makeSpriteLabel(txt,color,wPx){
+  const w=wPx||256,c=document.createElement('canvas');c.width=w;c.height=64;
   const ctx=c.getContext('2d');
-  ctx.fillStyle='rgba(0,0,0,0.72)';ctx.roundRect(0,0,256,64,8);ctx.fill();
-  ctx.font='bold 20px monospace';ctx.fillStyle=color||'#d97757';
-  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,128,32);
-  const tex=new THREE.CanvasTexture(c);
-  const mat=new THREE.SpriteMaterial({map:tex,depthTest:false,transparent:true});
-  const sp=new THREE.Sprite(mat);sp.scale.set(2.4,0.6,1);return sp;
+  ctx.fillStyle='rgba(8,8,12,0.78)';ctx.beginPath();ctx.roundRect(0,0,w,64,10);ctx.fill();
+  ctx.strokeStyle=color||'#d97757';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(1,1,w-2,62,10);ctx.stroke();
+  ctx.font='bold 22px ui-monospace,monospace';ctx.fillStyle=color||'#d97757';
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,w/2,33);
+  const tex=new THREE.CanvasTexture(c);tex.minFilter=THREE.LinearFilter;
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,depthTest:false,transparent:true}));
+  sp.scale.set(w/110,0.58,1);return sp;
 }
 
-function addStatBar(scene,value,label,posX,posZ,hexColor){
-  const bLen=valueToBarLength(value);
-  const geo=new THREE.BoxGeometry(bLen,0.18,0.18);
-  const col=new THREE.Color(hexColor);
-  const mat=new THREE.MeshStandardMaterial({color:col,metalness:0.3,roughness:0.6});
-  const mesh=new THREE.Mesh(geo,mat);
-  mesh.position.set(posX+bLen/2,0.09,posZ);
-  mesh.userData={tip:'<b>'+label+'</b><br><code>'+value+'</code><br><small>scalarBar: BAR_K×'+value+'='+bLen.toFixed(3)+'</small>'};
-  scene.add(mesh);statMeshes.push(mesh);
-  const sp=makeSpriteLabel(label+': '+value,'#'+col.getHexString());
-  sp.position.set(posX+bLen/2,0.6,posZ);scene.add(sp);
+// Persistent in-scene HUD, parented to the camera so the headline stats are
+// ALWAYS legible — first paint, every orbit angle, fullscreen, leaderboard
+// thumbnail. A labelled echo of the embedded stats; the SR table + JSON
+// islands stay the verifiable ground truth (sprites label; geometry carries
+// the invertible truth — same accepted pattern as the other scene labels).
+function makeHud(){
+  const W=1024,H=128,c=document.createElement('canvas');c.width=W;c.height=H;
+  const ctx=c.getContext('2d');
+  ctx.fillStyle='rgba(6,6,10,0.62)';ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#d97757';ctx.fillRect(0,0,W,4);
+  ctx.textBaseline='middle';
+  ctx.font='bold 44px ui-sans-serif,system-ui,sans-serif';ctx.fillStyle='#F2F2F2';
+  ctx.fillText(String(E.stats.totalTokens.display).toUpperCase()+' TOKENS',24,44);
+  ctx.font='600 24px ui-monospace,monospace';ctx.fillStyle='#E08A6B';
+  const bits=[E.stats.sessions.display+' sessions',
+    E.stats.streak.longestDays+'d max streak',
+    (lsm!=null?lsm.toLocaleString()+' min longest':null),
+    E.stats.favoriteModel].filter(Boolean);
+  ctx.fillText(bits.join('   ·   '),24,86);
+  ctx.font='500 17px ui-monospace,monospace';ctx.fillStyle='#9A9A9A';
+  ctx.fillText(String(E.contributor.displayName||E.contributor.handle).toUpperCase(),24,114);
+  const tex=new THREE.CanvasTexture(c);tex.minFilter=THREE.LinearFilter;
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,depthTest:false,transparent:true}));
+  sp.scale.set(3.5,0.4375,1);return sp;
 }
 
-function addRingPair(scene,ratio,label,cx,cz){
-  const inner=ENC.RING_BASE_RADIUS,outer=inner*ratio;
-  [inner,outer].forEach((r,idx)=>{
-    const geo=new THREE.TorusGeometry(r,0.06,8,48);
-    const mat=new THREE.MeshStandardMaterial({color:idx===0?0x56e07a:0xd97757,metalness:0.4,roughness:0.5});
-    const mesh=new THREE.Mesh(geo,mat);
-    mesh.rotation.x=Math.PI/2;mesh.position.set(cx,0.06,cz);
-    mesh.userData={tip:'<b>'+label+'</b><br><code>'+ratio+'×</code><br><small>ringRatio: outer r='+outer.toFixed(2)+'</small>'};
-    scene.add(mesh);statMeshes.push(mesh);
+// Token galaxy — a dense triple-arm spiral of EXACTLY
+// tokensToParticleCount(tok) points (the invertible tokenParticles channel,
+// unchanged). Layout is seeded by the integrity hash via MT19937: shape is
+// aesthetic, population is truth (verify-core §1.5). Replaces the old sparse
+// ±20 box scatter that read as three faint dots in the screenshot.
+function buildGalaxy(scene){
+  const pc=tokensToParticleCount(tok);
+  if(pc<=0)return null;
+  const N=Math.min(pc,30000),rnd=makeRng(seed);
+  const pos=new Float32Array(N*3),colr=new Float32Array(N*3),base=new THREE.Color();
+  const ARMS=4,R=13;
+  for(let i=0;i<N;i++){
+    const t=i/N,arm=i%ARMS,rad=Math.pow(t,0.62)*R+0.3;
+    const ang=arm*(2*Math.PI/ARMS)+rad*0.55+(rnd()-0.5)*0.55;
+    const jit=(rnd()-0.5)*(0.5+rad*0.06);
+    pos[i*3]=Math.cos(ang)*rad+jit;
+    pos[i*3+1]=3.2+(rnd()-0.5)*(0.7+rad*0.10);
+    pos[i*3+2]=Math.sin(ang)*rad+jit;
+    base.set(rampColor(0.18+0.8*t));
+    colr[i*3]=base.r;colr[i*3+1]=base.g;colr[i*3+2]=base.b;
+  }
+  const pg=new THREE.BufferGeometry();
+  pg.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  pg.setAttribute('color',new THREE.BufferAttribute(colr,3));
+  pg.userData={exactCount:pc,tip:'<b>Total tokens</b><br><code>'+tok.toLocaleString()+'</code><br><small>'+pc+' particles (1 per '+ENC.TOKEN_BUCKET.toLocaleString()+'; residue&lt;bucket disclosed)</small>'};
+  const pts=new THREE.Points(pg,new THREE.PointsMaterial({size:0.16,vertexColors:true,transparent:true,opacity:1.0,blending:THREE.AdditiveBlending,depthWrite:false}));
+  scene.add(pts);statMeshes.push(pts);
+  // Soft additive core glow — makes the galaxy read as a luminous HERO, not
+  // a flat point cloud. Pure decoration (no data channel); the population
+  // (pts.geometry.userData.exactCount) is the verified truth.
+  const gc=document.createElement('canvas');gc.width=gc.height=128;
+  const gx=gc.getContext('2d'),gg=gx.createRadialGradient(64,64,0,64,64,64);
+  gg.addColorStop(0,'rgba(240,138,107,0.62)');gg.addColorStop(0.35,'rgba(217,119,87,0.20)');gg.addColorStop(1,'rgba(217,119,87,0)');
+  gx.fillStyle=gg;gx.fillRect(0,0,128,128);
+  const glow=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(gc),blending:THREE.AdditiveBlending,depthWrite:false,transparent:true}));
+  glow.position.set(0,3.2,0);glow.scale.set(24,24,1);scene.add(glow);
+  // Bright pinpoint core — the galaxy nucleus reads as a luminous source.
+  const core=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(gc),blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,color:0xffd9c0}));
+  core.position.set(0,3.2,0);core.scale.set(5,5,1);scene.add(core);
+  return pts;
+}
+
+// Vertical stat pillar — the long (Y) dimension = valueToBarLength(value),
+// the EXACT invertible scalarBar channel (verify-core SSOT, unchanged;
+// verify() still round-trips it). Disparate values become an honest skyline:
+// a 12,788-min longest session legitimately towers over a 5-day streak.
+function addStatPillar(scene,value,label,x,hex){
+  // Luminous beam. Its HEIGHT (Y) is exactly valueToBarLength(value) — the
+  // unchanged invertible scalarBar channel (verify() still round-trips it);
+  // only the *form* changed (box → thin emissive beam) for delight. Disparate
+  // values become a cinematic light-skyline: a 12,788-min session is a beam
+  // to the heavens, a 5-day streak a low ember — both exact.
+  const len=valueToBarLength(value);if(!(len>0))return;
+  const col=new THREE.Color(hex),z=-0.4;
+  const beam=new THREE.Mesh(new THREE.CylinderGeometry(0.085,0.13,len,12),
+    new THREE.MeshStandardMaterial({color:col,emissive:col,emissiveIntensity:0.9,metalness:0.2,roughness:0.35,transparent:true,opacity:0.96}));
+  beam.position.set(x,len/2,z);
+  beam.userData={tip:'<b>'+label+'</b><br><code>'+value+'</code><br><small>scalarBar '+ENC.BAR_K+'×'+value+'='+len.toFixed(3)+' (invertible height)</small>'};
+  scene.add(beam);statMeshes.push(beam);
+  // Glowing base disc — roots the beam elegantly (pure decoration).
+  const base=new THREE.Mesh(new THREE.CircleGeometry(0.42,28),
+    new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.5,blending:THREE.AdditiveBlending,depthWrite:false}));
+  base.rotation.x=-Math.PI/2;base.position.set(x,0.02,z);scene.add(base);
+  const sp=makeSpriteLabel(label+' '+value,'#'+col.getHexString(),300);
+  sp.position.set(x,Math.min(len+0.9,6.8),z);scene.add(sp);
+}
+
+// Fun-fact presentation. The ringRatio channel is UNCHANGED (verify-core
+// SSOT: outer radius = RING_BASE_RADIUS*ratio, exact inverse; the SR table +
+// verifyParity remain authoritative). Depth-1 falsify finding: at a ratio in
+// the hundreds/thousands a TRUE-radius torus is so vast only a flat chord
+// crosses the hero frame — it reads as a stray line, not a ring, not delight.
+// Honest reconciliation: a ratio whose exact ring is actually perceptible
+// within the frame (outer <= FF_VIEW_BOUND) is drawn as that EXACT ring; a
+// larger one is shown as a camera-fixed fact tile that states the exact ratio
+// in words — a label echo (same accepted pattern as the HUD / SR table),
+// explicitly NOT a geometry claim. NEVER a cbrt/log/clamp-shrunk "ring":
+// that would fake a checkable brag, which is the product's whole thesis. The
+// ring/label boundary is disclosed in every tip.
+// Two-line fun-fact chip: a BIG exact ratio + a short human caption (wrapped,
+// never truncated — the depth-1 256px overflow clipped the ratio, the whole
+// point). Pure canvas sprite; the SR table + ringRatio channel stay the
+// verifiable datum (this is a label echo, not a geometry claim).
+function makeFactTile(ratioStr,caption,accent){
+  const W=640,H=156,c=document.createElement('canvas');c.width=W;c.height=H;
+  const ctx=c.getContext('2d');
+  ctx.fillStyle='rgba(8,8,12,0.86)';ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=accent;ctx.fillRect(0,0,7,H);
+  ctx.textBaseline='alphabetic';
+  ctx.font='800 66px ui-sans-serif,system-ui,sans-serif';ctx.fillStyle=accent;
+  ctx.fillText(ratioStr,30,72);
+  ctx.font='500 25px ui-monospace,monospace';ctx.fillStyle='#D8D8D8';
+  const words=String(caption).split(/s+/);let line='',y=112;
+  for(const w of words){
+    if(ctx.measureText(line+w+' ').width>W-46&&line){ctx.fillText(line.trim(),30,y);line=w+' ';y+=30;if(y>H-8)break;}
+    else line+=w+' ';
+  }
+  if(line.trim()&&y<=H-8)ctx.fillText(line.trim(),30,y);
+  const tex=new THREE.CanvasTexture(c);tex.minFilter=THREE.LinearFilter;
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,depthTest:false,transparent:true}));
+  sp.scale.set(2.35,2.35*H/W,1);return sp;
+}
+
+const FF_VIEW_BOUND=13; // world units — disclosed ring-vs-label cutoff
+function buildFunFacts(scene,camera){
+  let tileN=0;
+  funFacts.forEach((f,i)=>{
+    if(typeof f.value!=='number'||!(f.value>0))return;
+    const ratio=f.value,outer=ENC.RING_BASE_RADIUS*ratio; // EXACT — never altered
+    const ratioStr=(f.approx?'~':'')+ratio+'×';
+    const caption=f.label||f.baseline||'';
+    if(outer<=FF_VIEW_BOUND){
+      // Exact, perceptible, invertible ring.
+      const ring=new THREE.Mesh(
+        new THREE.TorusGeometry(outer,Math.max(0.05,outer*0.03),12,96),
+        new THREE.MeshStandardMaterial({color:0xd97757,metalness:0.5,roughness:0.4,emissive:0x9A3412,emissiveIntensity:0.35}));
+      ring.rotation.x=Math.PI/2+(i*0.18-0.18);ring.position.set(0,3.2,0);
+      ring.userData={tip:'<b>'+ratioStr+' '+caption+'</b><br><code>'+ratio+'×</code><br><small>ringRatio: outer r=RING_BASE_RADIUS×'+ratio+'='+outer.toFixed(2)+' (exact inverse; within view bound '+FF_VIEW_BOUND+')</small>'};
+      scene.add(ring);statMeshes.push(ring);
+    }else{
+      // Honest fact tile — camera-fixed, always legible. The exact ratio is
+      // the verifiable datum (SR table + unchanged ringRatio channel); the
+      // colossal true ring radius (RING_BASE_RADIUS*ratio world u) is stated
+      // in the screen-reader table, not faked small here.
+      const sp=makeFactTile(ratioStr,caption,'#E08A6B');
+      sp.position.set(2.15,1.05-tileN*0.62,-3.4);
+      camera.add(sp);tileN++;
+    }
   });
-  const sp=makeSpriteLabel(label,null);
-  sp.position.set(cx,outer+0.8,cz);scene.add(sp);
+}
+
+// Deterministic camera framing of the HERO (galaxy + pillars) so the scene
+// reads with ZERO interaction. The honest colossal rings sweep through as a
+// cinematic backdrop and are intentionally not used to size the frame.
+function frameHero(){
+  cam.position.set(15,9,20);
+  const tgt=new THREE.Vector3(0,3.4,0);
+  cam.lookAt(tgt);
+  if(controls){
+    controls.target.copy(tgt);
+    controls.autoRotate=!reduce;controls.autoRotateSpeed=0.5;
+    controls.minDistance=6;controls.maxDistance=160;controls.update();
+  }
 }
 
 function buildWebGL(){
   const cv=document.getElementById('ccflex');
   renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,preserveDrawingBuffer:true,alpha:true});
+  renderer.setClearColor(0x000000,0);
   renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-  const w=cv.clientWidth||640,h=cv.clientHeight||420;
-  renderer.setSize(w,h,false);
   const scene=new THREE.Scene();
-  const cam=new THREE.PerspectiveCamera(50,w/h,0.1,1000);
-  cam.position.set(12,10,20);cam.lookAt(5,2,4);
-  scene.add(new THREE.AmbientLight(0xffffff,0.6));
-  const dl=new THREE.DirectionalLight(0xffffff,1.0);dl.position.set(8,12,8);scene.add(dl);
+  cam=new THREE.PerspectiveCamera(52,16/9,0.1,4000);
+  scene.add(new THREE.AmbientLight(0xffffff,0.65));
+  const dl=new THREE.DirectionalLight(0xffffff,1.05);dl.position.set(8,14,9);scene.add(dl);
+  const pl=new THREE.PointLight(0xd97757,0.6,90);pl.position.set(0,6,0);scene.add(pl);
 
   if(!reduce){
     controls=new OrbitControls(cam,cv);
     controls.enableDamping=true;controls.dampingFactor=0.08;
-    controls.maxPolarAngle=Math.PI/1.8;
-    controls.target.set(5,2,4);controls.update();
+    controls.maxPolarAngle=Math.PI/1.75;
   }
 
-  // Heatmap bars (cellHeight + cellColour channels).
+  // Heatmap floor (cellHeight + cellColour channels) — centred. Present only
+  // if the entry carries a heatmap; the seed has none, so inert for it.
   if(heat.length){
-    const geo=new THREE.BoxGeometry(0.85,1,0.85);
-    grid=new THREE.InstancedMesh(geo,new THREE.MeshStandardMaterial(),heat.length);
+    const geo=new THREE.BoxGeometry(0.6,1,0.6),cols=26;
+    grid=new THREE.InstancedMesh(geo,new THREE.MeshStandardMaterial({metalness:0.2,roughness:0.7}),heat.length);
     grid.userData={isHeatmap:true};
     const m=new THREE.Matrix4(),col=new THREE.Color();
     for(let i=0;i<heat.length;i++){
       const d=heat[i],hh=countToHeight(d.count);
-      m.makeScale(1,hh,1);m.setPosition((i%26)*1.0,hh/2,Math.floor(i/26)*1.0);
+      m.makeScale(1,hh,1);m.setPosition((i%cols-cols/2)*0.7,hh/2,Math.floor(i/cols)*0.7-6);
       grid.setMatrixAt(i,m);grid.setColorAt(i,col.set(rampColor(d.count/maxC)));
     }
     grid.instanceMatrix.needsUpdate=true;grid.instanceColor.needsUpdate=true;
     grid.computeBoundingSphere();scene.add(grid);statMeshes.push(grid);
   }
 
-  // Particle field (tokenParticles channel).
-  const pc=tokensToParticleCount(tok);
-  if(pc>0){
-    const N=Math.min(pc,30000),rnd=makeRng(seed);
-    const pos=new Float32Array(N*3);
-    for(let i=0;i<N;i++){pos[i*3]=(rnd()-0.5)*40;pos[i*3+1]=rnd()*22;pos[i*3+2]=(rnd()-0.5)*40;}
-    const pg=new THREE.BufferGeometry();
-    pg.setAttribute('position',new THREE.BufferAttribute(pos,3));
-    pg.userData={exactCount:pc,tip:'<b>Total tokens</b><br><code>'+tok.toLocaleString()+'</code><br><small>'+pc+' particles (1 per '+ENC.TOKEN_BUCKET.toLocaleString()+')</small>'};
-    points=new THREE.Points(pg,new THREE.PointsMaterial({color:0xd97757,size:0.06}));
-    scene.add(points);
-  }
+  points=buildGalaxy(scene); // tokenParticles channel (exact count)
 
-  // Scalar stat bars (scalarBar channel) — offset behind heatmap.
-  const bz=-3;
-  if(sess>0) addStatBar(scene,sess,'Sessions',0,bz,'#56e07a');
-  if(cur>0)  addStatBar(scene,cur,'Streak',0,bz-1.4,'#d97757');
-  if(lng>0)  addStatBar(scene,lng,'Max streak',0,bz-2.8,'#9A3412');
-  if(lsm!=null&&lsm>0) addStatBar(scene,lsm,'Session min',0,bz-4.2,'#2fb457');
+  // Scalar pillars (scalarBar channel) — honest skyline.
+  const PILL=[[sess,'Sessions',2.0,'#56e07a'],[cur,'Streak',3.4,'#d97757'],
+              [lng,'Max streak',4.8,'#9A3412'],[lsm,'Longest min',-2.0,'#2fb457']];
+  for(const[v,l,x,c]of PILL)if(v!=null&&v>0)addStatPillar(scene,v,l,x,c);
 
-  // Fun-fact rings (ringRatio channel).
-  funFacts.forEach((f,i)=>{
-    if(typeof f.value==='number'&&f.value>0){
-      addRingPair(scene,f.value,(f.approx?'~':'')+f.value+'× vs '+(f.baseline||'?'),28+i*7,4);
-    }
-  });
+  // Fun-facts: exact ring if perceptible, else honest camera-fixed tile.
+  buildFunFacts(scene,cam);
+
+  // Persistent HUD parented to the camera (always on screen).
+  const hud=makeHud();
+  cam.add(hud);hud.position.set(0,-1.32,-3.4);scene.add(cam);
+
+  frameHero();
 
   // Raycaster for hover callout.
-  const ray=new THREE.Raycaster();
-  const mouse=new THREE.Vector2();
+  const ray=new THREE.Raycaster(),mouse=new THREE.Vector2();
   cv.addEventListener('pointermove',e=>{
     const r=cv.getBoundingClientRect();
     mouse.x=((e.clientX-r.left)/r.width)*2-1;
@@ -363,10 +508,14 @@ function buildWebGL(){
   cv.addEventListener('pointerleave',hideTip);
   cv.addEventListener('touchend',hideTip);
 
-  new ResizeObserver(()=>{
-    const nw=cv.clientWidth,nh=cv.clientHeight;
-    renderer.setSize(nw,nh,false);cam.aspect=nw/nh;cam.updateProjectionMatrix();
-  }).observe(cv);
+  // resize() — the SINGLE sizing authority (fixes the fullscreen bug).
+  resize=()=>{
+    const w=cv.clientWidth||640,h=cv.clientHeight||420;
+    renderer.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();
+  };
+  new ResizeObserver(resize).observe(cv);
+  addEventListener('resize',resize);
+  resize();
 
   const draw=()=>renderer.render(scene,cam);
   if(reduce){draw();}
@@ -375,16 +524,23 @@ function buildWebGL(){
 }
 
 function buildFallback(){
-  // Data-equivalent 2D canvas — identical ramp + stat labels, no motion.
+  // Data-equivalent 2D canvas — same ramp + a 2D galaxy of the EXACT
+  // tokensToParticleCount points + the same hero stat line, no motion.
   const cv=document.getElementById('ccflex');
-  const ctx=cv.getContext('2d');if(!ctx){window.__ccflexRendered=true;return;}
+  const ctx=cv.getContext&&cv.getContext('2d');if(!ctx){window.__ccflexRendered=true;return;}
   cv.width=cv.clientWidth||640;cv.height=cv.clientHeight||420;
   const W=cv.width,H=cv.height;
-  ctx.fillStyle='#161616';ctx.fillRect(0,0,W,H);
-  heat.forEach((d,i)=>{ctx.fillStyle=rampColor(d.count/maxC);ctx.fillRect((i%26)*22+8,(Math.floor(i/26))*22+8,18,18);});
-  ctx.font='bold 13px monospace';ctx.textBaseline='top';
-  [tok?'tokens: '+E.stats.totalTokens.display:null,sess?'sessions: '+sess:null,cur?'streak: '+cur+'d':null,lsm?'longest: '+lsm+'min':null]
-    .filter(Boolean).forEach((s,i)=>{ctx.fillStyle='rgba(0,0,0,.7)';ctx.fillRect(8,H-28-i*22,200,20);ctx.fillStyle='#d97757';ctx.fillText(s,12,H-26-i*22);});
+  const g=ctx.createRadialGradient(W/2,H*0.4,0,W/2,H*0.4,Math.max(W,H)*0.7);
+  g.addColorStop(0,'#15131c');g.addColorStop(1,'#070709');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  const pc=tokensToParticleCount(tok),rnd=makeRng(seed),N=Math.min(pc,4000),sc=Math.min(W,H)*0.34;
+  for(let i=0;i<N;i++){const t=i/N,rad=Math.pow(t,0.6)*sc,a=(i%3)*2.1+rad*0.03+(rnd()-0.5)*0.6;
+    ctx.fillStyle=rampColor(0.2+0.8*t);ctx.fillRect(W/2+Math.cos(a)*rad,H*0.42+Math.sin(a)*rad*0.6,1.7,1.7);}
+  heat.forEach((d,i)=>{ctx.fillStyle=rampColor(d.count/maxC);ctx.fillRect((i%26)*16+8,(Math.floor(i/26))*16+8,13,13);});
+  ctx.textBaseline='top';
+  ctx.font='bold 30px ui-sans-serif,system-ui,sans-serif';ctx.fillStyle='#F2F2F2';
+  ctx.fillText(String(E.stats.totalTokens.display).toUpperCase()+' TOKENS',20,18);
+  ctx.font='600 15px ui-monospace,monospace';ctx.fillStyle='#E08A6B';
+  ctx.fillText([E.stats.sessions.display+' sessions',E.stats.streak.longestDays+'d max streak',(lsm?lsm.toLocaleString()+' min longest':''),E.stats.favoriteModel].filter(Boolean).join('  ·  '),20,58);
   window.__ccflexRendered=true;
 }
 

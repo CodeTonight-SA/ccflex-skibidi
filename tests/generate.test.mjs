@@ -28,7 +28,7 @@ import {
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SEED = JSON.parse(
-  readFileSync(join(ROOT, "entries/_seed.example.json"), "utf8")
+  readFileSync(join(ROOT, "entries/ccflex-seed.json"), "utf8")
 );
 
 const islandJSON = (html, id) => {

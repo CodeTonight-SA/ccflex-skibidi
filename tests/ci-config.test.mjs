@@ -10,9 +10,10 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { readdirSync } from "node:fs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const wf = (name) => readFileSync(join(ROOT, ".github", "workflows", name), "utf8");
@@ -141,5 +142,51 @@ test("self-rsi only triggers on schedule / workflow_dispatch", () => {
   assert.ok(
     !hasTrigger(blk, "push"),
     "self-rsi must not run on push (it is the read-only analyser)"
+  );
+});
+
+// --- verify-cards convention: every card must have entries/<handle>.json ----
+//
+// Goodhart-proof: this test FAILS if:
+//   (a) a card exists without a matching entries/<handle>.json  — the original bug
+//   (b) the seed card is renamed back to a non-conventional path
+//   (c) a new card is committed without its entry (catches future regressions)
+// It would NOT fail if the workflow loop logic changed but the files remained
+// consistent — which is exactly the invariant we want to guard.
+
+test("every site/cards/*.html has a matching entries/<handle>.json", () => {
+  const cardsDir = join(ROOT, "site", "cards");
+  const entriesDir = join(ROOT, "entries");
+  const cards = readdirSync(cardsDir).filter((f) => f.endsWith(".html"));
+  assert.ok(cards.length > 0, "site/cards/ must contain at least one card");
+  for (const card of cards) {
+    const handle = card.replace(/\.html$/, "");
+    const entry = join(entriesDir, `${handle}.json`);
+    assert.ok(
+      existsSync(entry),
+      `card ${card} has no matching entries/${handle}.json — add the entry or fix the card filename`
+    );
+  }
+});
+
+test("seed card handle follows entries/<handle>.json convention (not _seed.example.json)", () => {
+  // Regression guard: the seed is a first-class contributor entry at
+  // entries/ccflex-seed.json (matching the entries/<handle>.json convention
+  // every contributor + the CI verify-cards/validate loop use). The legacy
+  // entries/_seed.example.json was MISNAMED — it held the live seed data,
+  // not a blank example — and a non-conforming scaffold under entries/ broke
+  // the CI `validate` glob. It must NOT exist under entries/; the contributor
+  // contract is schema/entry.schema.json. This fails under either regression.
+  const seedEntry = join(ROOT, "entries", "ccflex-seed.json");
+  assert.ok(
+    existsSync(seedEntry),
+    "entries/ccflex-seed.json must exist (seed is a first-class contributor entry)"
+  );
+  const seed = JSON.parse(readFileSync(seedEntry, "utf8"));
+  assert.equal(seed.contributor.handle, "ccflex-seed", "ccflex-seed.json is the real seed entry");
+  assert.ok(
+    !existsSync(join(ROOT, "entries", "_seed.example.json")),
+    "entries/_seed.example.json must NOT exist — it was the misnamed live-data file; " +
+      "the contributor contract is schema/entry.schema.json"
   );
 });

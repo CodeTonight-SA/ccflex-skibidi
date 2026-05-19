@@ -12,7 +12,7 @@ import { validateEntry, computeHash } from "../src/validate.mjs";
 import { canonicalize } from "../src/jcs.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const SEED = join(here, "..", "entries", "_seed.example.json");
+const SEED = join(here, "..", "entries", "ccflex-seed.json");
 
 function loadSeed() {
   const e = JSON.parse(readFileSync(SEED, "utf8"));

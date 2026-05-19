@@ -8,7 +8,8 @@ are few, and they exist so that the board means something.
 1. Install the plugin in your Claude Code, run `/ccflex-skibidi`.
 2. It generates `entries/<your-handle>.json` (the canonical, schema-valid
    record of your real numbers) and a self-contained HTML card.
-3. It offers an instant **Vanish** preview link — look at it.
+3. It offers an instant **Cloudflare Pages** preview link that renders the
+   card (not a download) — look at it.
 4. Open a pull request that adds **only** your `entries/<your-handle>.json`
    (and, optionally, your card under `site/cards/<your-handle>.html` if the
    generator produced it).

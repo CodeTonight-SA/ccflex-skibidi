@@ -19,7 +19,7 @@ const root = join(here, "..");
 
 const indexHtml = readFileSync(join(root, "site", "index.html"), "utf8");
 const screenshotSrc = readFileSync(join(root, "scripts", "screenshot.mjs"), "utf8");
-const vanishPath = join(root, "scripts", "vanish-preview.sh");
+const cfPath = join(root, "scripts", "cf-preview.sh");
 
 test("index.html fetches its own leaderboard.json from the same directory", () => {
   assert.match(
@@ -130,23 +130,23 @@ test("screenshot.mjs imports Playwright LAZILY and degrades (exit 3, no throw) w
   assert.equal(good.outPath, "b.png");
 });
 
-test("vanish-preview.sh is POSIX sh syntax-clean (sh -n)", () => {
+test("cf-preview.sh is POSIX sh syntax-clean (sh -n)", () => {
   // Throws (failing the test) on any syntax error or accidental bashism
   // that `sh -n` rejects.
-  execFileSync("sh", ["-n", vanishPath], { stdio: "pipe" });
+  execFileSync("sh", ["-n", cfPath], { stdio: "pipe" });
 });
 
-test("vanish-preview.sh treats a missing vanish CLI as non-blocking (exit 0)", () => {
-  const src = readFileSync(vanishPath, "utf8");
+test("cf-preview.sh treats a missing wrangler CLI as non-blocking (exit 0)", () => {
+  const src = readFileSync(cfPath, "utf8");
   assert.match(
     src,
-    /command -v vanish/,
-    "must probe for the vanish CLI on PATH"
+    /command -v wrangler/,
+    "must probe for the wrangler CLI on PATH"
   );
-  // The absent-CLI branch must exit 0 (optional, never blocks submission).
+  // The absent-CLI branch must exit 0 (preview is OPTIONAL, never blocks a PR).
   assert.match(
     src,
-    /install vanish-cli[\s\S]*?exit 0/i,
-    "absent vanish CLI must print an install note and exit 0"
+    /preview skipped[\s\S]*?exit 0/i,
+    "absent wrangler CLI must print a skip note and exit 0"
   );
 });

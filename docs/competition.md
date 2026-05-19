@@ -22,7 +22,8 @@ nothing is owed.
 
 1. Install the plugin (`/ccflex-skibidi` in any Claude Code).
 2. It reads your local `/stats` + `/usage`, writes `entries/<handle>.json` and
-   a self-contained card, and gives you an instant Vanish preview link.
+   a self-contained card, and gives you an instant Cloudflare Pages preview
+   link that renders the card (not a download).
 3. Open a PR adding **only** your `entries/<handle>.json` (card optional).
 4. CI validates the schema, re-verifies the integrity hash, regenerates the
    board + screenshot, and merges if honest. If a number disagrees with a

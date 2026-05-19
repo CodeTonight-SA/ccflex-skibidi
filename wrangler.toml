@@ -1,0 +1,19 @@
+# Cloudflare Pages — durable, shareable card host.
+# Decision: drafts/ccflex-cf-card-link-council.md (broly mesh, 2026-05-19).
+#
+# Why Pages: whole-directory static hosting means the generator's relative
+# paths (./leaderboard.json, ./cards/<handle>.html) "just work", and content
+# type is correct text/html by extension — which is precisely the fix for the
+# Vanish force-download bug (we solve it by not using Vanish). Per-card URLs
+# are deterministic: https://<project>.pages.dev/cards/<handle>.
+#
+# Pre-public-flip privacy: gate this Pages project with Cloudflare Access
+# (maintainer-only) until the flip. Access setup, the scoped deploy token,
+# the deploy workflow, and removing Access at flip are HUMAN-ONLY steps
+# (see docs/LAUNCH-CHECKLIST.md — bootstrap exception; the loop never does
+# the outward-facing enactment itself). This file is inert until someone
+# runs `wrangler pages deploy site` with their own Cloudflare auth.
+
+name = "ccflex-skibidi"
+pages_build_output_dir = "site"
+compatibility_date = "2026-05-19"

@@ -47,7 +47,8 @@ _Generated from verified `entries/`. Not hand-edited — it cannot be. `⚠` = s
 
 1. **Generate** — in any Claude Code install with the plugin:
    `/ccflex-skibidi` → reads your local `/stats` + `/usage`, builds your page.
-2. **Preview** — get an instant temporary link (Vanish) to look before you leap.
+2. **Preview** — get an instant Cloudflare Pages preview link that *renders*
+   (not a download) to look before you leap.
 3. **Submit** — open a PR adding your `entries/<handle>.json`. CI verifies the
    numbers, regenerates the board and the screenshot, merges if honest.
 

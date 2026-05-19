@@ -115,6 +115,12 @@ const sess     = E.stats.sessions?.value??0;
 const cur      = E.stats.streak?.currentDays??0;
 const lng      = E.stats.streak?.longestDays??0;
 const lsm      = E.stats.longestSessionMinutes??null;
+// funFact word-count sources:
+//   "Nineteen Eighty-Four" ~88,942 words (Project Gutenberg plain-text count, 2003 edition)
+//   "War and Peace" ~580,000 words (standard reference; Garnett translation)
+//   tokens-per-word factor implied by ratio: 265,100,000 ÷ (2155 × 88,942) ≈ 1.383
+//   (typical Claude/GPT tokeniser avg is 1.3–1.4 tokens/word for English prose)
+//   "War & Peace" ratio = 265,100,000 ÷ (330 × 580,000) ≈ 1.384 (same factor, consistent)
 const funFacts = E.stats.funFacts||[];
 
 function hasWebGL(){

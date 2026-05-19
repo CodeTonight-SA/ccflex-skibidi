@@ -51,19 +51,26 @@
         "value": 2155,
         "approx": true,
         "baseline": "1984"
+      },
+      {
+        "id": "tokens-vs-war-and-peace",
+        "label": "more tokens than War & Peace",
+        "value": 330,
+        "approx": true,
+        "baseline": "War and Peace"
       }
     ]
   },
   "integrity": {
     "algo": "sha256",
     "canonicalization": "rfc8785",
-    "hash": "5ef2ee4ca74a23f02c4ea2baa2fc724fbf369d9d8fd86a5b82f927b6c4e037be"
+    "hash": "752510a3972da994ceb5ef2055fe97011478f404279773328f637d9518edd1fd"
   }
 }
 </script>
 <script type="application/json" id="ccflex-integrity">
 {
-  "hash": "5ef2ee4ca74a23f02c4ea2baa2fc724fbf369d9d8fd86a5b82f927b6c4e037be"
+  "hash": "752510a3972da994ceb5ef2055fe97011478f404279773328f637d9518edd1fd"
 }
 </script>
 <style>
@@ -123,7 +130,7 @@ color:#fff;font-family:var(--font-mono);padding:24px;width:min(92vw,28rem);max-h
   </div>
   <div id="ccflex-tip" role="tooltip" aria-live="polite"></div>
 
-  <table><caption>Exact Claude Code stats for Lourens Cornelius Scheepers (V&gt;&gt;) — seeded 2026-05-19 — screen-reader and audit ground truth; every visual element is a pure function of these values.</caption><thead><tr><th scope="col">Metric</th><th scope="col">Value</th></tr></thead><tbody><tr><th scope="row">Favourite model</th><td data-metric>Opus 4.7</td></tr><tr><th scope="row">Total tokens</th><td data-metric>265.1m <span style="font-size:.7em;color:var(--mute)">(display-rounded source)</span></td></tr><tr><th scope="row">Sessions</th><td data-metric>1.0k <span style="font-size:.7em;color:var(--mute)">(display-rounded source)</span></td></tr><tr><th scope="row">Active days</th><td data-metric>82/105</td></tr><tr><th scope="row">Current streak (days)</th><td data-metric>5</td></tr><tr><th scope="row">Longest streak (days)</th><td data-metric>20</td></tr><tr><th scope="row">Longest session (min)</th><td data-metric>12788</td></tr><tr><th scope="row">Peak hour (24h)</th><td data-metric>23:00–24:00</td></tr><tr><th scope="row">more tokens than 1984 (approx.)</th><td data-metric>~2155× vs 1984</td></tr></tbody></table>
+  <table><caption>Exact Claude Code stats for Lourens Cornelius Scheepers (V&gt;&gt;) — seeded 2026-05-19 — screen-reader and audit ground truth; every visual element is a pure function of these values.</caption><thead><tr><th scope="col">Metric</th><th scope="col">Value</th></tr></thead><tbody><tr><th scope="row">Favourite model</th><td data-metric>Opus 4.7</td></tr><tr><th scope="row">Total tokens</th><td data-metric>265.1m <span style="font-size:.7em;color:var(--mute)">(display-rounded source)</span></td></tr><tr><th scope="row">Sessions</th><td data-metric>1.0k <span style="font-size:.7em;color:var(--mute)">(display-rounded source)</span></td></tr><tr><th scope="row">Active days</th><td data-metric>82/105</td></tr><tr><th scope="row">Current streak (days)</th><td data-metric>5</td></tr><tr><th scope="row">Longest streak (days)</th><td data-metric>20</td></tr><tr><th scope="row">Longest session (min)</th><td data-metric>12788</td></tr><tr><th scope="row">Peak hour (24h)</th><td data-metric>23:00–24:00</td></tr><tr><th scope="row">more tokens than 1984 (approx.)</th><td data-metric>~2155× vs 1984</td></tr><tr><th scope="row">more tokens than War &amp; Peace (approx.)</th><td data-metric>~330× vs War and Peace</td></tr></tbody></table>
 </main>
 <footer>
   <p>I counted your tokens. All of them. Engine: three.js@0.169.0, pinned.</p>
@@ -188,6 +195,12 @@ const sess     = E.stats.sessions?.value??0;
 const cur      = E.stats.streak?.currentDays??0;
 const lng      = E.stats.streak?.longestDays??0;
 const lsm      = E.stats.longestSessionMinutes??null;
+// funFact word-count sources:
+//   "Nineteen Eighty-Four" ~88,942 words (Project Gutenberg plain-text count, 2003 edition)
+//   "War and Peace" ~580,000 words (standard reference; Garnett translation)
+//   tokens-per-word factor implied by ratio: 265,100,000 ÷ (2155 × 88,942) ≈ 1.383
+//   (typical Claude/GPT tokeniser avg is 1.3–1.4 tokens/word for English prose)
+//   "War & Peace" ratio = 265,100,000 ÷ (330 × 580,000) ≈ 1.384 (same factor, consistent)
 const funFacts = E.stats.funFacts||[];
 
 function hasWebGL(){

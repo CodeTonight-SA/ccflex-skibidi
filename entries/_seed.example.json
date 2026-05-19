@@ -19,12 +19,13 @@
     "longestSessionMinutes": 12788,
     "peakHour": { "startHour": 23, "endHour": 24 },
     "funFacts": [
-      { "id": "tokens-vs-1984", "label": "more tokens than 1984", "value": 2155, "approx": true, "baseline": "1984" }
+      { "id": "tokens-vs-1984", "label": "more tokens than 1984", "value": 2155, "approx": true, "baseline": "1984" },
+      { "id": "tokens-vs-war-and-peace", "label": "more tokens than War & Peace", "value": 330, "approx": true, "baseline": "War and Peace" }
     ]
   },
   "integrity": {
     "algo": "sha256",
     "canonicalization": "rfc8785",
-    "hash": "5ef2ee4ca74a23f02c4ea2baa2fc724fbf369d9d8fd86a5b82f927b6c4e037be"
+    "hash": "752510a3972da994ceb5ef2055fe97011478f404279773328f637d9518edd1fd"
   }
 }

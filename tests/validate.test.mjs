@@ -55,9 +55,14 @@ test("each single structural mutation is rejected", () => {
   for (const [name, mutate] of mutations) {
     const e = clone(loadSeed());
     mutate(e);
-    if (!["bad handle", "wrong schemaVersion", "extra top-level prop"].includes(name)
-        && e.contributor && e.source && e.stats) {
-      // keep hash self-consistent so we test the STRUCTURAL rule, not the hash
+    // Recompute the hash ONLY for non-integrity structural mutations, so each
+    // structural rule is tested in isolation. Integrity-targeted mutations
+    // must survive — recomputing would silently undo them (the harness bug
+    // this suite caught on its own first run).
+    const skipRecompute =
+      ["bad handle", "wrong schemaVersion", "extra top-level prop"].includes(name) ||
+      name.startsWith("integrity");
+    if (!skipRecompute && e.contributor && e.source && e.stats) {
       try { e.integrity.hash = computeHash(e); } catch { /* canon may reject — fine */ }
     }
     const r = validateEntry(e);

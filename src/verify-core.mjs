@@ -98,10 +98,6 @@ export function makeRng(seed) {
   };
 }
 
-// Backward-compat alias kept for any caller that used mulberry32 by name.
-// The page script uses makeRng directly (updated in generate.mjs).
-export { makeRng as mulberry32 };
-
 // A stable integer seed derived purely from the entry's integrity hash, so
 // the layout is reproducible from the published JSON alone (no Date.now()).
 export function seedFromEntry(entry) {

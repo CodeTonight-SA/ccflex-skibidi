@@ -14,16 +14,29 @@
 
 import { existsSync } from "node:fs";
 
-const VIEWPORT = { width: 1200, height: 1600 };
+const DEFAULT_VIEWPORT = { width: 1200, height: 1600 };
 const STABLE_SELECTOR = "main, body";
 const STABLE_TIMEOUT_MS = 15000;
 
 export function parseArgs(argv) {
-  const [cardPath, outPath] = argv;
-  if (!cardPath || !outPath) {
-    return { ok: false, error: "usage: node scripts/screenshot.mjs <card.html> <out.png>" };
+  // Accepts an optional --viewport WxH flag before positional args.
+  // Default: 1200x1600 (backward-compatible; unchanged when flag absent).
+  let viewport = DEFAULT_VIEWPORT;
+  const rest = [];
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i] === "--viewport" && argv[i + 1]) {
+      const m = argv[++i].match(/^(\d+)x(\d+)$/);
+      if (!m) return { ok: false, error: "--viewport must be WxH e.g. 375x667" };
+      viewport = { width: Number(m[1]), height: Number(m[2]) };
+    } else {
+      rest.push(argv[i]);
+    }
   }
-  return { ok: true, cardPath, outPath };
+  const [cardPath, outPath] = rest;
+  if (!cardPath || !outPath) {
+    return { ok: false, error: "usage: node scripts/screenshot.mjs [--viewport WxH] <card.html> <out.png>" };
+  }
+  return { ok: true, cardPath, outPath, viewport };
 }
 
 export async function loadPlaywright() {
@@ -42,12 +55,13 @@ export async function loadPlaywright() {
   }
 }
 
-export async function shoot(chromium, cardPath, outPath) {
+export async function shoot(chromium, cardPath, outPath, viewport) {
+  const vp = viewport || DEFAULT_VIEWPORT;
   const fileUrl = "file://" + (cardPath.startsWith("/") ? cardPath : process.cwd() + "/" + cardPath);
   const browser = await chromium.launch({ headless: true });
   try {
     const ctx = await browser.newContext({
-      viewport: VIEWPORT,
+      viewport: vp,
       deviceScaleFactor: 1,
       reducedMotion: "reduce", // determinism: no tween, no scanline, no count-up
       colorScheme: "light",
@@ -77,7 +91,7 @@ async function main() {
     process.exit(3); // graceful degrade — never a crash
   }
   try {
-    await shoot(pw.chromium, args.cardPath, args.outPath);
+    await shoot(pw.chromium, args.cardPath, args.outPath, args.viewport);
     console.log("Screenshot written: " + args.outPath);
     process.exit(0);
   } catch (err) {

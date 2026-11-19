@@ -19,7 +19,7 @@ must not do).
 - [ ] `LICENSE` = MIT, © **Lourens Cornelius Scheepers**, year correct.
 - [ ] README credits verify present (V>> supplied 2026-05-19, no longer TODO):
       LinkedIn `https://www.linkedin.com/in/laurie-scheepers/`, GRIP
-      `https://about.grip-web.com`, ENTER Konsult `https://www.enterkonsult.com`,
+      `https://about.grip-web.com`, CodeTonight `https://codetonight.co.za`,
       alternative `https://codetonight-sa.github.io/`.
 - [ ] Untrusted-content path reviewed: CI verifies submissions by **parsing,
       never executing**; the verify job is capability-locked; forked-PR

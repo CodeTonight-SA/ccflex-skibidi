@@ -91,7 +91,7 @@ nothing untrusted ever executes.
 
 - Built with [GRIP](https://about.grip-web.com) — General Reasoning & Intelligence Platform.
 - © 2026 **Lourens Cornelius Scheepers** — [LinkedIn](https://www.linkedin.com/in/laurie-scheepers/).
-- [ENTER Konsult](https://www.enterkonsult.com) · alternative: [CodeTonight-SA](https://codetonight-sa.github.io/)
+- [CodeTonight](https://codetonight.co.za) · alternative: [CodeTonight-SA](https://codetonight-sa.github.io/)
 - Licensed **MIT** — see [`LICENSE`](LICENSE). Use it, fork it, flex with it.
 
 ## Status
